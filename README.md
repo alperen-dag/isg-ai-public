@@ -564,7 +564,39 @@ isg-ai-public/
 
 \---
 
+## 🖥️ Interface Preview
 
+The system includes a web-based management panel for monitoring workplace safety operations, reviewing violations, managing cameras, generating reports, and controlling user access.
+
+### Dashboard
+
+Provides a centralized overview of safety operations, including violation statistics, camera status, recent events, and violation trends.
+
+![ISG-AI Dashboard](docs/screenshots/dashboard.png)
+
+### Violation Management
+
+Safety violations detected by the system can be reviewed, searched, filtered, and managed through the violations interface.
+
+![ISG-AI Violation Management](docs/screenshots/violations.png)
+
+### Camera Management
+
+Camera sources can be monitored and configured individually. The interface provides camera health information, source status, PPE rules, and safety-zone configuration.
+
+![ISG-AI Camera Management](docs/screenshots/cameras.png)
+
+### Reporting
+
+Violation records can be filtered and exported for further analysis and documentation.
+
+![ISG-AI Reporting](docs/screenshots/reports.png)
+
+### User Management
+
+Administrators can manage system users, roles, account status, and access permissions from the management panel.
+
+![ISG-AI User Management](docs/screenshots/users.png)
 
 \## 🚀 Installation
 
@@ -576,9 +608,8 @@ Clone the repository:
 
 ```bash
 
-git clone https://github.com/alperen-dag/isg-ai-sistemi.git
-
-cd isg-ai-sistemi
+git clone https://github.com/alperen-dag/isg-ai-public.git
+cd isg-ai-public
 
 ```
 
