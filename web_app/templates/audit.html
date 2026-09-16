@@ -1,0 +1,41 @@
+{% extends 'base.html' %}{% from '_components.html' import heading with context %}{% block content %}{{ heading('İşlem kayıtları','Yönetim işlemlerinin izlenebilir geçmişi. Bu ekran yalnızca okunabilir.') }}<section class="panel">
+<div class="panel-head">
+<h2>Denetim geçmişi</h2>
+<small>{{ total }} işlem · Yalnızca yöneticiler</small>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Tarih / saat</th>
+<th>Kullanıcı</th>
+<th>İşlem türü</th>
+<th>Hedef</th>
+<th>IP adresi</th>
+<th>Değişiklik özeti</th>
+</tr>
+</thead>
+<tbody>{% for log in logs %}<tr>
+<td>
+<time>{{ log.tarih|replace('T',' ') }}</time>
+</td>
+<td>{{ log.kullanici_adi }}</td>
+<td class="audit-action">{{ {'ihlal_durumu_degistirildi':'İhlal durumu değiştirildi','ihlal_aciklamasi_degistirildi':'Olay açıklaması güncellendi','kamera_ppe_degistirildi':'Kamera PPE kuralları güncellendi','kullanici_olusturuldu':'Kullanıcı oluşturuldu','kullanici_aktifligi_degistirildi':'Hesap durumu değiştirildi','kullanici_rolu_degistirildi':'Kullanıcı rolü değiştirildi','kullanici_yetkileri_degistirildi':'Modül yetkileri değiştirildi','rapor_csv_disari_aktarildi':'CSV raporu indirildi','rapor_xlsx_disari_aktarildi':'Excel raporu indirildi','rapor_pdf_disari_aktarildi':'PDF raporu indirildi'}.get(log.islem_turu,log.islem_turu|replace('_',' ')) }}</td>
+<td>{{ log.hedef_turu }}{% if log.hedef_id is not none %} #{{ log.hedef_id }}{% endif %}</td>
+<td>{{ log.ip_adresi or 'Mevcut değil' }}</td>
+<td>{% if log.changes %}<details>
+<summary>{{ log.changes|length }} alanı incele</summary>{% for side,key,value in log.changes %}<div class="audit-change">
+<b>{{ side }}</b>
+<span>{{ key }}</span>
+<span>{{ value }}</span>
+</div>{% endfor %}</details>{% else %}<small>Ek değişiklik bilgisi yok</small>{% endif %}</td>
+</tr>{% else %}<tr>
+<td colspan="6" class="empty">Henüz işlem kaydı bulunmuyor.</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>
+<div class="pagination">
+<span>Sayfa {{ page }} / {{ pages }}</span>
+<div class="actions">{% if page>1 %}<a class="button" href="{{ url_for('islem_kayitlari',sayfa=page-1) }}">← Önceki</a>{% endif %}{% if page<pages %}<a class="button" href="{{ url_for('islem_kayitlari',sayfa=page+1) }}">Sonraki →</a>{% endif %}</div>
+</div>
+</section>{% endblock %}

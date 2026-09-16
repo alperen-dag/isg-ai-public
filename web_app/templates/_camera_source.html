@@ -1,0 +1,6 @@
+<div class="field"><label>Kaynak tipi</label><select name="source_type">{% for value,label in [('usb','USB / Yerel'),('rtsp','RTSP / IP'),('video','Video dosyası')] %}<option value="{{ value }}" {% if c and c.source_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+<div class="field"><label>Kaynak URI (şifresiz) / video dosyası</label><input name="source_uri" value="{{ c.source_uri if c else '' }}" maxlength="2048" placeholder="rtsp://192.168.1.100:554/stream"></div>
+<div class="field"><label>Kimlik bilgisi ortam değişkeni</label><input name="credential_env" value="{{ c.credential_env if c else '' }}" placeholder="ISG_CAMERA_PRESS_1"><small>Şifre buraya girilmez. Servis ortamındaki değişken tam RTSP adresini içerir.</small></div>
+<div class="field"><label>AI analiz</label><select name="analysis_enabled"><option value="1">Aktif</option><option value="0" {% if c and not c.analysis_enabled %}selected{% endif %}>Pasif</option></select></div>
+<div class="field"><label>Analiz FPS</label><input name="analysis_fps" type="number" min="0.1" max="120" step="0.1" value="{{ c.analysis_fps if c else 5 }}" required></div>
+<div class="field"><label>Worker grubu</label><input name="worker_group" value="{{ c.worker_group if c else 'default' }}" required></div>

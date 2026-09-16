@@ -1,0 +1,57 @@
+{% extends 'base.html' %}{% from '_components.html' import heading,csrf with context %}{% set title='Kullanıcılar' %}{% block content %}{{ heading('Kullanıcılar','Ekip üyelerini, hesap durumlarını ve erişim yetkilerini yönetin.') }}<section class="panel">
+<div class="panel-head">
+<h2>Sistem kullanıcıları</h2>
+<small>{{ kullanicilar|length }} hesap</small>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Kullanıcı</th>
+<th>E-posta</th>
+<th>Rol</th>
+<th>Durum</th>
+<th>İşlem</th>
+</tr>
+</thead>
+<tbody>{% for u in kullanicilar %}<tr>
+<td>
+<strong>{{ u[1] }}</strong>{% if u[0]==session.get('kullanici_id') %} <small>(Siz)</small>{% endif %}<br>
+<small>@{{ u[2] }}</small>
+</td>
+<td>{{ u[5] or 'Belirtilmemiş' }}</td>
+<td>{% if admin_mi() and u[0]!=session.get('kullanici_id') %}<form method="post" action="{{ url_for('kullanici_rol',kullanici_id=u[0]) }}" class="actions">{{ csrf() }}<div class="field">
+<label class="sr-only" for="role-{{ u[0] }}">{{ u[1] }} rolü</label>
+<select id="role-{{ u[0] }}" name="rol">{% for role in izinli_roller %}<option {% if role==u[3] %}selected{% endif %}>{{ role }}</option>{% endfor %}</select>
+</div>
+<button type="submit">Kaydet</button>
+</form>{% else %}{{ u[3] }}{% endif %}</td>
+<td>
+<span class="badge {{ 'resolved' if u[4] else '' }}">{{ 'Aktif' if u[4] else 'Pasif' }}</span>
+</td>
+<td>{% if admin_mi() %}<div class="actions">
+<a class="button" href="{{ url_for('kullanici_yetkileri',kullanici_id=u[0]) }}">Yetkiler</a>{% if u[0]!=session.get('kullanici_id') %}<form method="post" action="{{ url_for('kullanici_durum',kullanici_id=u[0]) }}">{{ csrf() }}<button type="submit">{{ 'Pasif yap' if u[4] else 'Aktif yap' }}</button>
+</form>{% endif %}</div>{% else %}—{% endif %}</td>
+</tr>{% else %}<tr>
+<td colspan="5" class="empty">Kullanıcı bulunamadı.</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>
+</section>{% if admin_mi() %}<section class="panel">
+<div class="panel-head">
+<h2>Yeni kullanıcı</h2>
+</div>
+<form class="panel-body form-stack" method="post" action="{{ url_for('kullanici_ekle') }}">{{ csrf() }}<div class="filters">{% for key,label,type in [('ad_soyad','Ad soyad','text'),('kullanici_adi','Kullanıcı adı','text'),('eposta','E-posta (isteğe bağlı)','email'),('sifre','Parola','password')] %}<div class="field">
+<label for="{{ key }}">{{ label }}</label>
+<input id="{{ key }}" name="{{ key }}" type="{{ type }}" maxlength="{{ 254 if key=='eposta' else 128 if key=='sifre' else 64 if key=='kullanici_adi' else 120 }}" {% if key!='eposta' %}required{% endif %} {% if key=='sifre' %}autocomplete="new-password"{% endif %}>
+</div>{% endfor %}<div class="field">
+<label for="new-role">Rol</label>
+<select id="new-role" name="rol">{% for role in izinli_roller %}<option {% if role=='Görüntüleyici' %}selected{% endif %}>{{ role }}</option>{% endfor %}</select>
+</div>
+</div>
+<small>Parola en az 8 karakter; küçük/büyük harf, rakam ve özel karakter içermelidir. Kullanıcı oluşturulduktan sonra modül yetkilerini atayın.</small>
+<div>
+<button type="submit" class="primary">Kullanıcı oluştur</button>
+</div>
+</form>
+</section>{% endif %}{% endblock %}

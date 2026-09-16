@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block content %}<section class="panel">
+<div class="empty">
+<div class="eyebrow">{{ error.code }}</div>
+<h1>İşlem tamamlanamadı</h1>
+<p style="margin:20px 0">{{ error.description }}</p>
+<a class="button" href="{{ url_for('kok_sayfa') }}">Çalışma alanına dön</a>
+</div>
+</section>{% endblock %}

@@ -1,0 +1,52 @@
+{% from '_components.html' import icon %}
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title|default('Yönetim Paneli') }} · ISG-AI</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='panel.css') }}">
+<script src="{{ url_for('static',filename='panel.js') }}" defer>
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">İçeriğe geç</a>
+<aside class="sidebar" id="sidebar">
+<a class="brand" href="{{ url_for('kok_sayfa') }}">
+<span class="brand-mark">İ</span>
+<span>
+<strong>ISG<span style="color:#e99453">·</span>AI</strong>
+<small>İŞ GÜVENLİĞİ PLATFORMU</small>
+</span>
+</a>
+<div class="nav-label">YÖNETİM PANELİ</div>
+<nav aria-label="Ana menü">
+{% for module, endpoint, label, glyph in [('dashboard','ana_sayfa','Dashboard','grid'),('ihlaller','ihlal_listesi','İhlaller','alert'),('kameralar','kameralar','Kameralar','camera'),('raporlar','raporlar','Raporlar','chart'),('kullanicilar','kullanicilar','Kullanıcılar','users')] %}
+{% if module in session.get('yetkiler',[]) %}<a class="nav-link {% if request.endpoint == endpoint or (module == 'ihlaller' and request.endpoint == 'ihlal_detay') or (module == 'kullanicilar' and request.endpoint == 'kullanici_yetkileri') %}active{% endif %}" href="{{ url_for(endpoint) }}">{{ icon(glyph) }}{{ label }}</a>{% endif %}{% endfor %}
+{% if admin_mi() %}<a class="nav-link {% if request.endpoint == 'islem_kayitlari' %}active{% endif %}" href="{{ url_for('islem_kayitlari') }}">{{ icon('list') }}İşlem Kayıtları</a>{% endif %}</nav>
+<div class="sidebar-foot">
+<strong>Güvenli çalışma, görünür veriler.</strong>İSG izleme ve olay yönetimi</div>
+</aside>
+<button class="mobile-shade" aria-label="Menüyü kapat" tabindex="-1">
+</button>
+<div class="workspace">
+<header class="topbar">
+<div class="actions">
+<button type="button" class="mobile-toggle" data-menu aria-expanded="false" aria-controls="sidebar" aria-label="Menüyü aç">☰</button>
+<div class="breadcrumb">Çalışma alanı <span aria-hidden="true"> / </span> <b>{{ title|default('Yönetim Paneli') }}</b>
+</div>
+</div>
+<div class="user-area">
+<span class="avatar">{{ (session.get('ad_soyad') or 'K')[:1] }}</span>
+<div class="user-meta">
+<strong>{{ session.get('ad_soyad','') }}</strong>
+<small>{{ session.get('rol','') }}</small>
+</div>{% if session.get('kullanici_id') %}<form method="post" action="{{ url_for('logout') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<button class="logout" aria-label="Oturumu kapat">Çıkış</button>
+</form>{% endif %}</div>
+</header>
+<main id="main" class="content">{% for category,message in get_flashed_messages(with_categories=true) %}<div class="notice {{ category }}" role="status">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}</main>
+</div>
+</body>
+</html>

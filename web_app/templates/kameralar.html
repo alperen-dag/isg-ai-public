@@ -1,0 +1,78 @@
+{% extends 'base.html' %}{% from '_components.html' import heading,icon,csrf with context %}{% block content %}{{ heading('Kameralar','Kamera yapılandırmasını ve desteklenen PPE kurallarını yönetin.') }}<div class="notice">Baret/yelek kuralları yaklaşık {{ runtime.rule_refresh_seconds }} saniyede yenilenir; yeniden başlatma gerekmez. DB kesintisinde son kurallar en fazla {{ runtime.rule_max_stale_seconds }} saniye kullanılır. Kamera ayarları otomatik yenilenir; kaynak değişince yalnız ilgili bağlantı yeniden açılır. Health bilgisi sayfa yenilendiğinde güncellenir.</div>
+<p>{{ kameralar|length }} kamera · {{ kameralar|selectattr("health.status","equalto","online")|list|length }} çevrimiçi · {{ kameralar|selectattr("health.status","equalto","offline")|list|length }} çevrimdışı · {{ kameralar|selectattr("health.status","equalto","unknown")|list|length }} bilinmiyor</p><div class="camera-grid">{% for c in kameralar %}<section class="panel">
+<div class="panel-head">
+<h2>{{ c.kamera_adi }}</h2>
+<span class="badge {{ 'resolved' if c.aktif else '' }}">{{ 'Aktif' if c.aktif else 'Pasif' }}</span>
+</div>
+<div class="camera-visual">{{ icon('camera') }}<div>
+<strong>{{ c.source_type|upper }} · {{ c.kamera_index if c.source_type == "usb" else "Ağ / dosya kaynağı" }}</strong>
+<small>Bağlantı durumu: {{ c.health.label }}</small>
+</div>
+</div>
+<div class="panel-body">
+<p>Son başarılı frame: {{ c.health.last_frame }}<br>
+Son hata: {{ c.health.last_error }} {{ c.health.error_summary }}<br>
+Alınan FPS: {{ c.health.fps if c.health.fps is not none else 'Mevcut değil' }}
+{% if c.health.stale %}<br>Frame bilgisi güncel değil ({{ runtime.health_stale_seconds }} saniye).{% endif %}</p>
+<div class="camera-info">
+<div>
+<small>Kamera ID</small>
+<p>#{{ c.id }}</p>
+</div>
+<div>
+<small>Yasak bölge alanı</small>
+<p>%{{ (c.yasak_bolge_orani*100)|round(1) }}</p>
+</div>
+</div>
+<div class="rule-row">
+<span>Zone detection<small>Her aktif kameranın kendi bölge ayarı kullanılır.</small>
+</span>
+<span class="badge {{ 'resolved' if c.aktif and c.yasak_bolge_orani>0 else '' }}">{{ 'Etkin ayar' if c.aktif and c.yasak_bolge_orani>0 else 'Pasif ayar' }}</span>
+</div>
+<form method="post" action="{{ url_for('kamera_ppe',kamera_id=c.id) }}">{{ csrf() }}{% for key,label in [('helmet','Baret kontrolü'),('vest','Yelek kontrolü')] %}<label class="rule-row" for="{{ key }}-{{ c.id }}">
+<span>{{ label }}<small>{{ 'Etkin' if rules.get((c.id,key),false) else 'Kapalı' }}</small>
+</span>
+<input id="{{ key }}-{{ c.id }}" type="checkbox" name="{{ key }}" value="1" {% if rules.get((c.id,key),false) %}checked{% endif %} {% if not admin_mi() %}disabled{% endif %}>
+</label>{% endfor %}{% if admin_mi() %}<button type="submit" class="primary" style="margin-top:16px">PPE kurallarını kaydet</button>{% endif %}</form>
+<p class="footer-note">Kulak koruyucu ve ayakkabı algılama henüz desteklenmiyor.</p>
+</div>{% if admin_mi() %}<details>
+<summary>Kamera ayarlarını düzenle</summary>
+<form class="form-stack" method="post" action="{{ url_for('kamera_duzenle',kamera_id=c.id) }}">{{ csrf() }}<div class="field">
+<label for="name-{{ c.id }}">Kamera adı</label>
+<input id="name-{{ c.id }}" name="kamera_adi" value="{{ c.kamera_adi }}" minlength="2" maxlength="100" required>
+</div>
+<div class="field">
+<label for="source-{{ c.id }}">Kamera index</label>
+<input id="source-{{ c.id }}" name="kamera_index" type="number" min="0" value="{{ c.kamera_index }}" required>
+</div>
+<div class="field">
+<label for="zone-{{ c.id }}">Yasak bölge yüzdesi</label>
+<input id="zone-{{ c.id }}" name="yasak_bolge_yuzdesi" type="number" min="0" max="100" step="0.1" value="{{ (c.yasak_bolge_orani*100)|round(1) }}" required>
+</div>
+{% include "_camera_source.html" %}<button type="submit">Ayarları kaydet</button>
+</form>
+<form method="post" action="{{ url_for('kamera_durum',kamera_id=c.id) }}" style="margin-top:16px">{{ csrf() }}<button type="submit">{{ 'Pasif yap' if c.aktif else 'Aktif yap' }}</button>
+</form>
+</details>{% endif %}</section>{% else %}<div class="empty">Henüz kamera eklenmemiş.</div>{% endfor %}</div>{% if admin_mi() %}<section class="panel" style="margin-top:24px">
+<details open>
+<summary>Yeni kamera ekle</summary>
+<form class="form-stack" method="post" action="{{ url_for('kamera_ekle') }}">{{ csrf() }}<div class="filters">
+<div class="field">
+<label for="new-name">Kamera adı</label>
+<input id="new-name" name="kamera_adi" minlength="2" maxlength="100" required>
+</div>
+<div class="field">
+<label for="new-index">Kamera index</label>
+<input id="new-index" name="kamera_index" type="number" min="0" required>
+</div>
+<div class="field">
+<label for="new-zone">Yasak bölge (%)</label>
+<input id="new-zone" name="yasak_bolge_yuzdesi" type="number" min="0" max="100" step="0.1" value="35" required>
+</div>
+</div>
+<div>
+{% with c=none %}{% include "_camera_source.html" %}{% endwith %}<button type="submit" class="primary">Kamera ekle</button>
+</div>
+</form>
+</details>
+</section>{% endif %}{% endblock %}

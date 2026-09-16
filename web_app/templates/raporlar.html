@@ -1,0 +1,38 @@
+{% extends 'base.html' %}{% from '_components.html' import heading,filters,status,confidence with context %}{% set title='Raporlar' %}{% block content %}{{ heading('Raporlar','İhlal verilerini filtreleyin ve paylaşılabilir raporlar oluşturun.') }}<section class="panel">{{ filters(filtreler,ihlal_turleri,kameralar,durumlar,url_for('raporlar')) }}</section>
+<div class="stats">{% for label,value in [('Toplam kayıt',toplam_ihlal),('Açık',yeni_sayisi),('İnceleniyor',inceleniyor_sayisi),('Çözüldü',cozuldu_sayisi)] %}<article class="stat">
+<div class="stat-top">{{ label }}</div>
+<strong>{{ value }}</strong>
+<small>Seçili filtrelere göre</small>
+</article>{% endfor %}</div>
+<section class="panel">
+<div class="panel-head">
+<div>
+<h2>Rapor sonuçları</h2>
+<small>İndirmeler seçili filtreleri kullanır.</small>
+</div>
+<div class="actions">{% for endpoint,label in [('raporlar_csv','CSV indir'),('raporlar_xlsx','Excel indir'),('raporlar_pdf','PDF indir')] %}<a class="button" href="{{ url_for(endpoint,**filtreler) }}">{{ label }}</a>{% endfor %}</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarih / saat</th>
+<th>İhlal türü</th>
+<th>Confidence</th>
+<th>Durum</th>
+</tr>
+</thead>
+<tbody>{% for i in ihlaller %}<tr>
+<td>#{{ i[0] }}</td>
+<td>{{ i[1] }}</td>
+<td title="{{ i[2] }}">{{ i[2]|violation_label }}</td>
+<td>{{ confidence(i[3]) }}</td>
+<td>{{ status(i[4]) }}</td>
+</tr>{% else %}<tr>
+<td colspan="5" class="empty">
+<strong>Bu filtrelerle kayıt bulunamadı</strong>Tarih aralığını veya diğer filtreleri değiştirebilirsiniz.</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>
+</section>{% endblock %}

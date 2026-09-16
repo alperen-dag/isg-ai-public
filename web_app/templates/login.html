@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Giriş · ISG-AI</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='panel.css') }}">
+</head>
+<body>
+<main class="login-page">
+<section class="login-story">
+<div class="brand">
+<span class="brand-mark">İ</span>
+<span>
+<strong>ISG·AI</strong>
+<small>İŞ GÜVENLİĞİ PLATFORMU</small>
+</span>
+</div>
+<h1>Daha güvenli bir saha.<br>Daha görünür bir operasyon.</h1>
+<p>İhlalleri takip edin, olayları değerlendirin ve güvenlik süreçlerini tek bir çalışma alanından yönetin.</p>
+<footer>İSG izleme · Kamera yönetimi · Raporlama</footer>
+</section>
+<section class="login-form-area">
+<div class="login-box">
+<div class="eyebrow">YÖNETİM PANELİ</div>
+<h2>Çalışma alanınıza giriş yapın</h2>
+<p>Devam etmek için hesap bilgilerinizi kullanın.</p>{% if hata %}<div class="notice error" role="alert">{{ hata }}</div>{% endif %}<form method="post" class="form-stack">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="field">
+<label for="kullanici_adi">Kullanıcı adı</label>
+<input id="kullanici_adi" name="kullanici_adi" autocomplete="username" maxlength="64" required>
+</div>
+<div class="field">
+<label for="sifre">Parola</label>
+<input id="sifre" name="sifre" type="password" autocomplete="current-password" maxlength="128" required>
+</div>
+<button type="submit" class="primary">Giriş yap →</button>
+</form>
+<div class="footer-note">Erişim sorunu yaşıyorsanız sistem yöneticinizle iletişime geçin.</div>
+</div>
+</section>
+</main>
+</body>
+</html>

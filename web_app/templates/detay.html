@@ -1,0 +1,89 @@
+{% extends 'base.html' %}{% from '_components.html' import heading,status,confidence,csrf with context %}{% block content %}{% call heading('İhlal #'~ihlal.id,ihlal.ihlal_turu|violation_label) %}<a class="button" href="{{ url_for('ihlal_listesi') }}">← İhlallere dön</a>{% endcall %}<div class="detail-grid">
+<div>
+<section class="panel">
+<div class="panel-head">
+<h2>Olay görüntüsü</h2>{{ status(ihlal.durum) }}</div>{% if ihlal.fotograf_yolu %}{% set photo=url_for('ihlal_gorseli',dosya_adi=ihlal.fotograf_yolu.removeprefix('ihlaller/')) %}<a class="photo-link" href="{{ photo }}" data-photo target="_blank" rel="noopener">
+<img class="evidence" data-evidence src="{{ photo }}" alt="İhlal {{ ihlal.id }} olay görüntüsü">
+</a>
+<div class="empty" data-missing-photo hidden>Olay görüntüsüne ulaşılamıyor.</div>
+<div class="photo-note">Görüntüyü büyütmek için üzerine tıklayın.</div>
+<dialog id="photo-dialog">
+<button type="button" class="button" data-close-photo>Kapat</button>
+<img src="{{ photo }}" alt="İhlal {{ ihlal.id }} büyütülmüş görüntü">
+</dialog>{% else %}<div class="empty">Bu kayıt için görüntü mevcut değil.</div>{% endif %}</section>
+<section class="panel">
+<div class="panel-head">
+<h2>Açıklama / gözlem notu</h2>
+</div>
+<div class="panel-body">{% if can_edit_violations %}<form method="post" action="{{ url_for('aciklama_kaydet',ihlal_id=ihlal.id) }}" class="form-stack">{{ csrf() }}<div class="field">
+<label for="aciklama">Olay açıklaması</label>
+<textarea id="aciklama" name="aciklama" maxlength="3000" rows="4">{{ ihlal.aciklama or '' }}</textarea>
+</div>
+<div>
+<button type="submit">Açıklamayı kaydet</button>
+</div>
+</form>{% else %}<p class="note-text">{{ ihlal.aciklama or 'Açıklama eklenmemiş.' }}</p>{% endif %}</div>
+</section>
+</div>
+<div>
+<section class="panel">
+<div class="panel-head">
+<h2>Kayıt bilgileri</h2>
+</div>
+<div class="panel-body">
+<dl class="metadata">
+<div>
+<dt>Tarih / saat</dt>
+<dd>{{ ihlal.tarih|replace('T',' ') }}</dd>
+</div>
+<div>
+<dt>Kamera</dt>
+<dd>{{ ihlal.kamera_adi }}</dd>
+</div>
+<div>
+<dt>İhlal türü</dt>
+<dd title="{{ ihlal.ihlal_turu }}">{{ ihlal.ihlal_turu|violation_label }}</dd>
+</div>
+<div>
+<dt>Confidence</dt>
+<dd>{{ confidence(ihlal.guven_skoru) }}</dd>
+</div>
+<div class="wide">
+<dt>Kişi / Track ID</dt>
+<dd>{{ ihlal.person_id or 'Mevcut değil' }}</dd>
+</div>
+</dl>
+</div>
+</section>
+<section class="panel">
+<div class="panel-head">
+<h2>Durum ve çözüm</h2>{{ status(ihlal.durum) }}</div>
+<div class="panel-body">{% if ihlal.cozum_tarihi %}<dl class="metadata">
+<div>
+<dt>Çözen kullanıcı</dt>
+<dd>{{ ihlal.cozen_kullanici_adi or 'Mevcut değil' }}</dd>
+</div>
+<div>
+<dt>Çözüm zamanı</dt>
+<dd>{{ ihlal.cozum_tarihi|replace('T',' ') }}</dd>
+</div>
+<div class="wide">
+<dt>Çözüm notu</dt>
+<dd class="note-text">{{ ihlal.cozum_notu or 'Not eklenmemiş.' }}</dd>
+</div>
+</dl>
+<hr style="border:0;border-top:1px solid var(--line);margin:22px 0">{% elif ihlal.durum=='Çözüldü' %}<p class="muted">Bu eski kayıtta çözen kullanıcı ve çözüm zamanı mevcut değil.</p>{% endif %}{% if can_edit_violations %}<form class="form-stack" method="post" action="{{ url_for('durum_guncelle',ihlal_id=ihlal.id) }}">{{ csrf() }}<div class="field">
+<label for="durum">Olay durumu</label>
+<select id="durum" name="durum">{% for state in durumlar %}<option value="{{ state }}" {% if (ihlal.durum or 'Yeni')==state %}selected{% endif %}>{{ state|status_label }}</option>{% endfor %}</select>
+</div>
+<div class="field">
+<label for="cozum_notu">Çözüm notu</label>
+<textarea id="cozum_notu" name="cozum_notu" rows="3" maxlength="3000" placeholder="Alınan önlemi veya çözümü açıklayın">
+</textarea>
+<small>Çözüldü durumuna geçişte kaydedilir. Yeniden açılan olayın önceki çözümü işlem kayıtlarında korunur.</small>
+</div>
+<button class="primary" type="submit">Durumu güncelle</button>
+</form>{% endif %}</div>
+</section>
+</div>
+</div>{% endblock %}

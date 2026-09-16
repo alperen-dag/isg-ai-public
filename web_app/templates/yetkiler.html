@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% from '_components.html' import heading,csrf with context %}{% set title='Yetki Yönetimi' %}{% block content %}{{ heading('Yetki yönetimi',kullanici[1]~' · @'~kullanici[2]) }}<section class="panel">
+<div class="panel-head">
+<h2>Modül erişimleri</h2>
+</div>
+<form class="panel-body" method="post">{{ csrf() }}<div class="permissions">{% for key,label in moduller %}<label class="permission">
+<input type="checkbox" name="yetkiler" value="{{ key }}" {% if key in mevcut_yetkiler %}checked{% endif %}>{{ label }}</label>{% endfor %}</div>
+<div class="actions">
+<button type="submit" class="primary">Yetkileri kaydet</button>
+<a class="button" href="{{ url_for('kullanicilar') }}">Geri dön</a>
+</div>
+</form>
+</section>{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}{% from '_components.html' import heading,icon,table with context %}{% block content %}
+{% call heading('Operasyon özeti','Sahadaki güvenlik durumunu tek bir yerden takip edin.') %}<span class="button">{{ today }} · Günlük görünüm</span>{% endcall %}
+<div class="stats">{% for label,value,caption,glyph,kind in [('Bugünkü toplam ihlal',today_count,'Bugün kaydedilen olaylar','alert','alert'),('Açık ihlal',open_count,'Açık ve incelenen · Tüm zamanlar','list','alert'),('Çözülen ihlal',resolved,'Çözüldü · Tüm zamanlar','check',''),('Aktif kamera',active_cameras,'Yapılandırmada etkin kameralar','camera','')] %}<article class="stat {{ kind }}">
+<div class="stat-top">{{ label }}<span class="stat-symbol">{{ icon(glyph) }}</span>
+</div>
+<strong>{{ value }}</strong>
+<small>{{ caption }}</small>
+</article>{% endfor %}</div>
+<div class="daily-grid">{% for label,key in [('Bugünkü baret ihlali','Baret Eksik'),('Bugünkü yelek ihlali','Yelek Eksik'),('Bugünkü yasak bölge ihlali','Yasak Bölge İhlali')] %}<article class="daily">
+<div>
+<span>{{ label }}</span>
+<small>Bugün kaydedilen</small>
+</div>
+<strong>{{ today_types.get(key,0) }}</strong>
+</article>{% endfor %}</div>
+<div class="grid-2">
+<section class="panel">
+<div class="panel-head">
+<div>
+<h2>İhlal trendi</h2>
+<small>Son 7 gün · Günlük kayıt sayısı</small>
+</div>{{ icon('chart') }}</div>{% if not trend|sum(attribute='count') %}<div class="empty">Son 7 günde ihlal kaydı bulunmuyor.</div>{% endif %}<div class="chart" role="img" aria-label="Son 7 gün ihlal sayıları: {% for day in trend %}{{ day.date }}: {{ day.count }}; {% endfor %}">{% for day in trend %}<div class="chart-column">
+<span class="chart-value">{{ day.count }}</span>
+<div class="chart-bar" style="height:{{ (day.count/trend_max*125)|round(1) }}px">
+</div>
+<small>{{ day.label }}</small>
+</div>{% endfor %}</div>
+</section>
+<section class="panel">
+<div class="panel-head">
+<div>
+<h2>İhlal türlerine göre dağılım</h2>
+<small>Tüm zamanlar · {{ total }} kayıt · İhlal Türü Sayısı: {{ distribution|length }}</small>
+</div>
+</div>
+<div class="distribution">{% for label,count in distribution %}<div class="distribution-row">
+<div class="distribution-label">
+<span>{{ label }}</span>
+<strong>{{ count }} <small> / %{{ (count/total*100)|round(1) }}</small>
+</strong>
+</div>
+<div class="meter">
+<span style="width:{{ (count/total*100)|round(1) }}%">
+</span>
+</div>
+</div>{% else %}<div class="empty">Dağılım için henüz veri yok.</div>{% endfor %}</div>
+</section>
+</div>
+<section class="panel">
+<div class="panel-head">
+<div>
+<h2>Son ihlaller</h2>
+<small>En son kaydedilen 8 olay</small>
+</div>{% if 'ihlaller' in session.get('yetkiler',[]) %}<a class="button" href="{{ url_for('ihlal_listesi') }}">Tüm ihlaller →</a>{% endif %}</div>{{ table(ihlaller,true) }}</section>
+<section class="panel">
+<div class="panel-head">
+<div>
+<h2>Kamera bazlı ihlal özeti</h2>
+<small>Aktiflik bilgisi kamera ayarıdır; canlı bağlantı durumu değildir.</small>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Kamera</th>
+<th>Yapılandırma</th>
+<th>Bugün</th>
+<th>Toplam ihlal</th>
+</tr>
+</thead>
+<tbody>{% for camera in camera_summary %}<tr>
+<td>
+<strong>{{ camera.kamera_adi }}</strong>
+</td>
+<td>
+<span class="badge {{ 'resolved' if camera.aktif else '' }}">{{ 'Aktif' if camera.aktif else 'Pasif' }}</span>
+</td>
+<td>{{ camera.today }}</td>
+<td>{{ camera.total }}</td>
+</tr>{% else %}<tr>
+<td colspan="4" class="empty">Kamera kaydı bulunmuyor.</td>
+</tr>{% endfor %}{% if unknown_cameras %}<tr>
+<td class="muted">Kamera bilgisi olmayan eski kayıtlar</td>
+<td>—</td>
+<td>—</td>
+<td>{{ unknown_cameras }}</td>
+</tr>{% endif %}</tbody>
+</table>
+</div>
+</section>{% endblock %}

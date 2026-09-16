@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% from '_components.html' import heading,filters,table with context %}{% block content %}{{ heading('İhlaller','Olayları filtreleyin, inceleyin ve çözüm sürecini yönetin.') }}<section class="panel">{{ filters(filtreler,ihlal_turleri,kameralar,durumlar,url_for('ihlal_listesi')) }}</section>
+<section class="panel">
+<div class="panel-head">
+<h2>İhlal kayıtları</h2>
+<small>{{ total }} sonuç</small>
+</div>{{ table(ihlaller) }}<div class="pagination">
+<span>Sayfa {{ page }} / {{ pages }} · Sayfa başına 25 kayıt</span>
+<div class="actions">{% if page>1 %}<a class="button" href="{{ url_for('ihlal_listesi',sayfa=page-1,**query) }}">← Önceki</a>{% endif %}{% if page<pages %}<a class="button" href="{{ url_for('ihlal_listesi',sayfa=page+1,**query) }}">Sonraki →</a>{% endif %}</div>
+</div>
+</section>{% endblock %}
